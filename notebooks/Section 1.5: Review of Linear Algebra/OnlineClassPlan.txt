@@ -1,3 +1,0 @@
-1.Linear Algebra Review.ipynb
-2.Matrix notation and operations.ipynb
-7.PCA.ipynb
