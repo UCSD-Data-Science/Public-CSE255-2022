@@ -1,0 +1,37 @@
+'1. SQL and basic statistics-MA.ipynb'
+Loading and presenting yearly data.
+Examples of SQL commands
+Precipitation and smoothing
+mean+- std for each type of measurement
+Distribution of undefined entries.
+
+"1.5 Compute statistics file for a given state.ipynb"
+Compute statistics for a state that is not in the statistics directory.
+Display some simple statistics for the state
+
+"2 Weather Analysis - Initial Visualisation.ipynb"
+plots of yearly vectors for different collections of years
+mean+- std for each type of measurement
+Distribution of undefined entries.
+
+"3.FunctionsAsVectors.ipynb" (Non-Spark)
+Demonstration of eigen-vector decomppositions using sliders
+
+"4.Spectral analysis of snow-depth in MA.ipynb"
+Compute Decompositions for a particular MA, SNWD and a number of coefficient
+Note: the thresholds on the residuals should be adjusted to get meaningful results.
+Plots describing distribution of coefficients.
+
+'4.5 Spectral analysis of TOBS in MA.ipynb'
+Same as 4. for TOBS
+
+'4.7 all eigen for MA.ipynb'
+Plots mean and eigen-vectors for all measurement types in MA
+
+'5. maps for  MA.ipynb'
+Draws a map and places on it disks that indicate the value of a chosen
+coefficient with size proportional to the number of measurements.
+
+"6. Is SNWD variation spatial or temporal.ipynb"
+A study of the relative importance of space and time in the variation of the second coefficient for SNWD
+

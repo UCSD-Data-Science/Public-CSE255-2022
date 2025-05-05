@@ -29,4 +29,7 @@ class YearPlotter:
         fig.autofmt_xdate()
         ax.grid()
         ax.legend()
+        #ax.set_xlim([dates_to_plot[0], dates_to_plot[-1]])  # Always show full year
+        ax.xaxis.set_major_locator(self.months)
+        ax.xaxis.set_major_formatter(self.monthsFmt)
        

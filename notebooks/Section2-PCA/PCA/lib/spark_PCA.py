@@ -19,14 +19,14 @@ def computeCov(RDDin):
     """computeCov recieves as input an RDD of np arrays, all of the same length, 
     and computes the covariance matrix for that set of vectors"""
     RDD=RDDin.map(lambda v:np.array(np.insert(v,0,1),dtype=np.float64)) # insert a 1 at the beginning of each vector so that the same 
-                                           #calculation also yields the mean vector
+
+    
+    from spark_PCA import outerProduct, sumWithNan
+    
+    #calculation also yields the mean vector
     OuterRDD=RDD.map(outerProduct)   # separating the map and the reduce does not matter because of Spark uses lazy execution.
     (S,N)=OuterRDD.reduce(sumWithNan)
-    # Unpack result and compute the covariance matrix
-    # print('RDD=',RDD.collect())
-    # print('shape of S=',S.shape,'shape of N=',N.shape)
-    # print('S=',S)
-    # print('N=',N)
+
     E=S[0,1:]
     NE=np.float64(N[0,1:])
     #print('shape of E=',E.shape,'shape of NE=',NE.shape)
@@ -40,6 +40,9 @@ def computeCov(RDDin):
 
 if __name__=="__main__":
     # create synthetic data matrix with j rows and rank k
+    
+    from pyspark import SparkContext
+    sc=SparkContext()
     
     V=2*(np.random.random([2,10])-0.5)
     data_list=[]

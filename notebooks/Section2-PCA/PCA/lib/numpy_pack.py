@@ -1,5 +1,4 @@
 import numpy as np
-
 """Code for packing and unpacking a numpy array into a byte array.
    the array is flattened if it is not 1D.
    This is intended to be used as the interface for storing 
@@ -26,6 +25,8 @@ def unpackAndScale(row):
     """ Unpack bytearray, then if measurement is in ['TMIN','TMAX','TOBS']
     then divide by 10 to get celsius
     """
+    #from numpy_pack import unpackArray
+
     if '_S' in row.Measurement:
         v=unpackArray(row.Values,data_type=np.float16)
     else:

@@ -2,27 +2,30 @@
 from numpy import linalg as LA
 import numpy as np
 
-from lib.numpy_pack import packArray,unpackArray, unpackAndScale
-from lib.spark_PCA import computeCov
 from time import time
-import os
 from pickle import load,dump
+
+from numpy_pack import packArray,unpackArray,unpackAndScale
+from spark_PCA import computeCov
+
 
 _measurements=['TMAX', 'SNOW', 'SNWD', 'TMIN', 'PRCP', 'TOBS']
 _measurements=_measurements+[x+'_S10' for x in _measurements] + [x+'_S20' for x in _measurements]
 _measurements
 
-def load_or_compute_statistics(sqlContext,pkl_filename,weather_df,ms):
+def load_or_compute_statistics(sc,sqlContext,pkl_filename,weather_df,ms):
+    import os
     if os.path.isfile(pkl_filename):   
         print('precomputed statistics file exists')
         with open(pkl_filename,'br') as pkl_file:
             stat=load(pkl_file)
     else:
         print('computing statistics')
-        stat=computeStatistics(sqlContext,weather_df,measurements=ms)
+        stat=computeStatistics(sc,sqlContext,weather_df,measurements=ms)
         with open(pkl_filename,'bw') as pkl_file:
             dump(stat,pkl_file)
     return stat
+
 
 def computeStatistics(sqlContext,df,measurements=_measurements):
     """Compute all of the statistics for a given dataframe
@@ -32,7 +35,8 @@ def computeStatistics(sqlContext,df,measurements=_measurements):
     returns: STAT, a dictionary of dictionaries. First key is measurement, 
              second keys described in computeStats.STAT_Descriptions
     """
-
+    print('computestatistics loading')
+ 
     sqlContext.registerDataFrameAsTable(df,'local_weather')
     STAT={}  # dictionary storing the statistics for each measurement
     
@@ -45,7 +49,8 @@ def computeStatistics(sqlContext,df,measurements=_measurements):
         if mdf_count==0:
               continue
 
-        data=mdf.rdd.map(lambda row: unpackAndScale(row))
+        data=mdf.rdd.map(lambda row: unpackAndScale(row)).cache()
+        data.count()
 
         #Compute basic statistics
         STAT[meas]=computeOverAllDist(data)   # Compute the statistics 

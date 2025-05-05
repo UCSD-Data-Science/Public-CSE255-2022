@@ -1,6 +1,13 @@
 # Prepare python libraries for distribution to executors
 # !tar -czvf lib.tgz lib/*.py
 
+import sys
+
+if len(sys.argv)<=1:
+    sc_type='S'
+else:
+    sc_type=sys.argv[1]
+print('sc_type=',sc_type)
 
 # start sparkContext
 import pandas as pd
@@ -13,8 +20,13 @@ import pyspark
 from pyspark import SparkContext
 from lib import sparkConfig
 
-sc = SparkContext(pyFiles=['lib.tgz'])
-#master="local[10]"
+from start_spark_context import start_spark_context, get_current_namespace
+
+if sc_type!='S':
+    sc = SparkContext('local[10]')
+else:
+    sc=start_spark_context()
+
 print('sparkContext=',sc)
 print()
 
@@ -22,23 +34,31 @@ print()
 from pyspark.sql import *
 import pyspark.sql
 sqlContext = SQLContext(sc)
-
-#load libraries
 import numpy as np
-from lib.numpy_pack import packArray,unpackArray,unpackAndScale
-from lib.spark_PCA import computeCov
-from lib.computeStatistics import *
+
+#load libraries to workers
+sc.addPyFile("lib/numpy_pack.py")
+sc.addPyFile("lib/spark_PCA.py")
+sc.addPyFile("lib/computeStatistics.py")
+sc.addPyFile("lib/decomposer.py")
+
+import warnings  # Suppress Warnings
+warnings.filterwarnings('ignore')
+sc.setLogLevel("ERROR")
 
 _figsize=(10,7)
+
+### Load lib archive
+#sc.addArchive("lib.tgz")  # extract directory on all workers
 
 ### Load the required libraries
 
 from lib.YearPlotter import YearPlotter
-from lib.decomposer import *
-from lib.Reconstruction_plots import *
+#from lib.decomposer import *
+#from lib.Reconstruction_plots import *
 
-from lib.import_modules import import_modules,modules
-import_modules(modules)
+#from lib.import_modules import import_modules,modules
+#import_modules(modules)
 
 # import widgets library
 import matplotlib.pyplot as plt
@@ -51,7 +71,9 @@ warnings.filterwarnings('ignore')
 
 ## Change the paths here to account for current location of parquest files
 ## load measurement and stations dataframe
-parquet_root='/datasets/cs255-sp22-a00-public/'
+ns=get_current_namespace()
+parquet_root=f'/home/{ns}/public/Data/weather'
+print('parquet_root=',parquet_root)
 
 measurements_path=parquet_root+'/weather-parquet'
 measurements=sqlContext.read.parquet(measurements_path)

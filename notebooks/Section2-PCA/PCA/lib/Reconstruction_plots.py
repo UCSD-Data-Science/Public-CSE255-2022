@@ -1,12 +1,13 @@
 import numpy as np
 import pylab as plt
 
-from lib.numpy_pack import packArray,unpackArray,unpackAndScale
-from lib.decomposer import *
+print('about to inmport decomposer')
 from lib.YearPlotter import YearPlotter
 import matplotlib.pyplot as plt
+from lib.decomposer import Eigen_decomp
 
 from ipywidgets import interact, interactive, fixed, interact_manual
+
 import ipywidgets as widgets
 
 class recon_plot:
@@ -125,6 +126,7 @@ def plot_decomp(row,Mean,EigVec,fig=None,ax=None,Title=None,interactive=False):
     :rtype: recon_plot
 
     """
+    from lib.numpy_pack import unpackAndScale, unpackArray
     target=np.array(unpackAndScale(row),dtype=np.float64)
     if Title is None:
         Title='%s / %d    %s'%(row['station'],row['year'],row['measurement'])

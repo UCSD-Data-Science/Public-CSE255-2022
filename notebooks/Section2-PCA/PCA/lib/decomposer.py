@@ -1,5 +1,6 @@
 import numpy as np
-from lib.numpy_pack import packArray,unpackArray,unpackAndScale
+import os, sys
+
 from pyspark.sql import Row
 
 class Eigen_decomp:
@@ -61,8 +62,8 @@ class Eigen_decomp:
             residual_var[i+1]=compute_var(residual)
 
         # normalize residuals
-        _residuals=residual_var/residual_var[0]   # Divide ressidulas by residuals after subtracting mean
-        _residuals[0] = residual_var[0]/total_energy
+        _residuals=residual_var/(residual_var[0]+1e-10)   # Divide ressidulas by residuals after subtracting mean
+        _residuals[0] = residual_var[0]/(total_energy+1e-10)
 
         return (('total_energy',total_energy),
                 ('fraction residual var after mean, eig1,eig2,...',_residuals),
@@ -71,7 +72,7 @@ class Eigen_decomp:
     # total_var,residuals,reductions,coeff=recon.compute_var_explained()
 
 
-def decompose_dataframe(sqlContext,df,EigVec,Mean):
+def decompose_dataframe(sc,sqlContext,df,EigVec,Mean):
     """ run decompose(row) on all rows of a dataframe, return an augmented dataframe with columns
     corresponding to residuals and coefficients.
     """
@@ -86,7 +87,11 @@ def decompose_dataframe(sqlContext,df,EigVec,Mean):
         Mean and EigVec are sent to the workers as global variables of "decompose"
 
         """
-        Series=np.array(unpackAndScale(row),dtype=np.float64)
+        #from numpy_pack import unpackAndScale
+        import numpy_pack
+        Series=np.array(numpy_pack.unpackAndScale(row),dtype=np.float64)
+        #Mean=Mean_BC.value
+        #EigVec=EigVec_BC.value
         recon=Eigen_decomp(None,Series,Mean,EigVec);
         total_var,residuals,coeff=recon.compute_var_explained()
 
@@ -98,6 +103,11 @@ def decompose_dataframe(sqlContext,df,EigVec,Mean):
             D['coeff_'+str(i)]=float(coeff[1]['c'+str(i-1)])
         return Row(**D)
 
-    #body of decompose_dataframe
-    rdd2=df.rdd.map(decompose)
+    # main of decompose_dataframe
+    
+    #EigVec_BC=sc.broadcast(EigVec)
+    #Mean_BC=sc.broadcast(Mean)
+    import decomposer
+    rdd2=df.rdd.map(decompose).cache()
+    rdd2.count()
     return sqlContext.createDataFrame(rdd2)
